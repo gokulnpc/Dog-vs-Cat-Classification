@@ -5,7 +5,17 @@ import tf_keras as keras
 
   
 # loaded_model = keras.models.load_model("dog_cat_classifier.keras", compile=False, custom_objects={'KerasLayer': hub.KerasLayer})
-loaded_model = keras.saving.load_model("dog_cat_classifier.keras", compile=False, custom_objects={'KerasLayer': hub.KerasLayer})
+# loaded_model = keras.saving.load_model("dog_cat_classifier.keras", compile=False, custom_objects={'KerasLayer': hub.KerasLayer})
+
+# load weights
+loaded_model = keras.models.Sequential([
+    hub.KerasLayer("https://tfhub.dev/google/tf2-preview/mobilenet_v2/feature_vector/4", input_shape=(224,224,3), trainable=False),
+    keras.layers.Dense(2)
+])
+loaded_model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+
+loaded_model.load_weights("dog_cat_classifier_weights.h5")
+
 def process_image(image):
     # with keras
     img = keras.preprocessing.image.load_img(image, target_size=(224, 224))
