@@ -1,5 +1,6 @@
 import streamlit as st
 import tensorflow as tf
+import tensorflow_hub as hub
 
 version_fn = getattr(tf.keras, "version", None)
 if version_fn and version_fn().startswith("3."):
@@ -7,14 +8,18 @@ if version_fn and version_fn().startswith("3."):
 else:
   keras = tf.keras
   
-loaded_model = keras.models.load_model("dog_cat_classifier.keras")
+loaded_model = keras.models.load_model("dog_cat_classifier.keras", compile=False, custom_objects={'KerasLayer': hub.KerasLayer})
 
 def process_image(image):
     # with keras
     img = keras.preprocessing.image.load_img(image, target_size=(224, 224))
     img = keras.preprocessing.image.img_to_array(img)
-    img = img.reshape(1, 224, 224, 1)
+    # expected shape=(None, 224, 224, 3)
+    img = tf.image.resize(img, [224, 224])
     img = img / 255.0
+    img = tf.expand_dims(img, axis=0)
+    
+    
     return img
 
 # Sidebar for navigation
@@ -32,9 +37,15 @@ if options == 'Prediction': # Prediction page
         st.image(image, caption='Uploaded Image', use_column_width=True)
     
     if st.button('Predict'):
-        img_array = process_image(image)
-        prediction = loaded_model.predict(img_array).argmax()
-        st.write(f'The predicted digit is: {prediction}')
+        with st.spinner('Model working....'):
+            img_array = process_image(image)
+            prediction = loaded_model.predict(img_array).argmax()
+            if prediction == 0:
+                st.write('Prediction: Cat')
+            else:
+                st.write('Prediction: Dog')
+            
+        
     
             
 elif options == 'Code':
