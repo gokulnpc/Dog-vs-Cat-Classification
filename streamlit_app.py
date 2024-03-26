@@ -1,15 +1,11 @@
 import streamlit as st
 import tensorflow as tf
 import tensorflow_hub as hub
+import tf_keras as keras
 
-version_fn = getattr(tf.keras, "version", None)
-if version_fn and version_fn().startswith("3."):
-  import tf_keras as keras
-else:
-  keras = tf.keras
   
-loaded_model = keras.models.load_model("dog_cat_classifier.keras", compile=False, custom_objects={'KerasLayer': hub.KerasLayer})
-
+# loaded_model = keras.models.load_model("dog_cat_classifier.keras", compile=False, custom_objects={'KerasLayer': hub.KerasLayer})
+loaded_model = keras.saving.load_model("dog_cat_classifier.keras", compile=False, custom_objects={'KerasLayer': hub.KerasLayer})
 def process_image(image):
     # with keras
     img = keras.preprocessing.image.load_img(image, target_size=(224, 224))
@@ -17,9 +13,7 @@ def process_image(image):
     # expected shape=(None, 224, 224, 3)
     img = tf.image.resize(img, [224, 224])
     img = img / 255.0
-    img = tf.expand_dims(img, axis=0)
-    
-    
+    img = tf.expand_dims(img, axis=0)  
     return img
 
 # Sidebar for navigation
@@ -29,7 +23,6 @@ options = st.sidebar.selectbox('Select a page:',
 
 if options == 'Prediction': # Prediction page
     st.title('Dog vs Cat Classification with Transfer Learning')
-
 
     # User inputs: image
     image = st.file_uploader('Upload an image:', type=['jpg', 'jpeg', 'png'])
@@ -44,9 +37,6 @@ if options == 'Prediction': # Prediction page
                 st.write('Prediction: Cat')
             else:
                 st.write('Prediction: Dog')
-            
-        
-    
             
 elif options == 'Code':
     st.header('Code')
