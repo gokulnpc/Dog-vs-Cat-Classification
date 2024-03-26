@@ -1,3 +1,4 @@
 ./train/
 ./train_resized/
 ./test1/
+.gitignore
